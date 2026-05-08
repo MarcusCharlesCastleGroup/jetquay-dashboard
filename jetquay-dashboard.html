@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JetQuay CIP – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0f1623;
+    --surface2: #151e2e;
+    --surface3: #1a2438;
+    --border: #1e2d45;
+    --border2: #253550;
+    --text: #e2e8f5;
+    --text-muted: #7a90b5;
+    --text-light: #3d5070;
+    --accent: #3b82f6;
+    --accent-light: rgba(59,130,246,0.15);
+    --green: #22c55e;
+    --green-light: rgba(34,197,94,0.12);
+    --yellow: #eab308;
+    --yellow-light: rgba(234,179,8,0.12);
+    --orange: #f97316;
+    --orange-light: rgba(249,115,22,0.12);
+    --red: #ef4444;
+    --red-light: rgba(239,68,68,0.12);
+    --ft: #a78bfa;
+    --ft-light: rgba(167,139,250,0.12);
+    --pt: #22d3ee;
+    --pt-light: rgba(34,211,238,0.12);
+    --suspended: #64748b;
+    --suspended-light: rgba(100,116,139,0.15);
+    --suspended-border: #334155;
+    --shadow: 0 2px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  /* ── KEYFRAMES ── */
+  @keyframes glow-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0), 0 2px 8px rgba(0,0,0,0.4); }
+    50%       { box-shadow: 0 0 16px 3px rgba(239,68,68,0.35), 0 2px 8px rgba(0,0,0,0.4); }
+  }
+  @keyframes glow-orange {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(249,115,22,0), 0 2px 8px rgba(0,0,0,0.4); }
+    50%       { box-shadow: 0 0 14px 3px rgba(249,115,22,0.3), 0 2px 8px rgba(0,0,0,0.4); }
+  }
+  @keyframes glow-yellow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(234,179,8,0), 0 2px 8px rgba(0,0,0,0.4); }
+    50%       { box-shadow: 0 0 12px 2px rgba(234,179,8,0.25), 0 2px 8px rgba(0,0,0,0.4); }
+  }
+  @keyframes pulse-dot-red {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(1.5); }
+  }
+  @keyframes pulse-dot-orange {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(1.4); }
+  }
+  @keyframes shimmer-red {
+    0%   { border-left-color: rgba(239,68,68,0.3); }
+    50%  { border-left-color: rgba(239,68,68,0.9); }
+    100% { border-left-color: rgba(239,68,68,0.3); }
+  }
+  @keyframes shimmer-orange {
+    0%   { border-left-color: rgba(249,115,22,0.3); }
+    50%  { border-left-color: rgba(249,115,22,0.9); }
+    100% { border-left-color: rgba(249,115,22,0.3); }
+  }
+  @keyframes grid-fade {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);
+    min-height: 100vh; font-size: 14px;
+  }
+  /* Subtle grid background */
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .header, .notif-bar, .main, .modal-overlay { position: relative; z-index: 1; }
+
+  /* ── LOGIN SCREEN ── */
+  #loginScreen {
+    position: fixed; inset: 0; background: #0b0f1a;
+    display: flex; align-items: center; justify-content: center; z-index: 9999;
+    transition: opacity 0.4s;
+  }
+  #loginScreen.hidden { opacity: 0; pointer-events: none; }
+  .login-box {
+    background: #111827; border: 1px solid #1e2d45; border-radius: 20px;
+    padding: 48px 44px; width: 380px; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .login-logo {
+    width: 56px; height: 56px; margin: 0 auto 20px;
+    background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 30px rgba(59,130,246,0.4);
+  }
+  .login-logo svg { width: 28px; height: 28px; fill: white; }
+  .login-title { font-size: 20px; font-weight: 800; color: #e8edf5; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .login-sub { font-size: 12px; color: #7a8fb5; margin-bottom: 32px; }
+  .login-label { display: block; text-align: left; font-size: 11px; font-weight: 600; color: #7a8fb5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .login-input {
+    width: 100%; background: #1a2236; border: 1px solid #1e2d45; border-radius: 10px;
+    padding: 12px 16px; color: #e8edf5; font-size: 14px; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.2s; margin-bottom: 16px;
+  }
+  .login-input:focus { border-color: #3b82f6; }
+  .login-btn {
+    width: 100%; background: linear-gradient(135deg,#1d4ed8,#3b82f6); color: white;
+    border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  .login-err { font-size: 12px; color: #ef4444; margin-top: 12px; min-height: 18px; }
+
+  /* ── HEADER ── */
+  .header {
+    background: rgba(8,12,20,0.85); border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    padding: 0 32px; display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+    box-shadow: 0 0 20px rgba(59,130,246,0.4);
+  }
+  .logo svg { width: 20px; height: 20px; fill: white; }
+  .header-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .header-sub { font-size: 12px; color: var(--text-muted); }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .live-clock { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 16px; text-align: right; }
+  .clock-date { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .clock-time { font-size: 20px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; letter-spacing: -0.5px; line-height: 1.2; }
+  .tab-switcher { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 2px; }
+  .tab-btn { padding: 6px 16px; border-radius: 6px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; }
+  .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+  .save-indicator { font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 6px; min-width: 120px; text-align: center; transition: all 0.3s; }
+  .save-indicator.saved { background: var(--green-light); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .save-indicator.error { background: var(--red-light); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .save-indicator.saving { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(59,130,246,0.3); }
+  .logout-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; font-size: 12px; color: var(--text-muted); cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .logout-btn:hover { background: var(--surface2); color: var(--text); }
+
+  /* ── NOTIFICATIONS ── */
+  .notif-bar { padding: 10px 32px; display: flex; gap: 8px; overflow-x: auto; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .notif-chip { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 100px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; }
+  .notif-chip:hover { transform: translateY(-1px); }
+  .notif-chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .notif-chip.expired { background: var(--red-light); color: var(--red); border-color: rgba(239,68,68,0.3); }
+  .notif-chip.expired .dot { background: var(--red); animation: pulse-dot-red 1.4s ease-in-out infinite; }
+  .notif-chip.critical { background: var(--orange-light); color: var(--orange); border-color: rgba(249,115,22,0.3); }
+  .notif-chip.critical .dot { background: var(--orange); animation: pulse-dot-orange 1.8s ease-in-out infinite; }
+  .notif-chip.warning { background: var(--yellow-light); color: var(--yellow); border-color: rgba(234,179,8,0.3); }
+  .notif-chip.warning .dot { background: var(--yellow); }
+  .notif-chip.ok { background: var(--green-light); color: var(--green); border-color: rgba(34,197,94,0.3); }
+  .notif-chip.ok .dot { background: var(--green); }
+  .notif-chip.suspended { background: var(--suspended-light); color: var(--suspended); border-color: var(--suspended-border); }
+  .notif-chip.suspended .dot { background: var(--suspended); }
+
+  /* ── MAIN ── */
+  .main { padding: 28px 32px; max-width: 1600px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  #panel-lookup { }
+  #panel-lookup .lookup-search-box input { pointer-events: auto; cursor: text; }
+
+  /* ── STATS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; cursor: pointer; transition: all 0.2s; }
+  .stat-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+  .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 700; font-family: 'DM Mono', monospace; margin-bottom: 4px; }
+  .stat-sub { font-size: 11px; color: var(--text-light); }
+  .stat-card.all .stat-value { color: var(--text); }
+  .stat-card.ft .stat-value { color: var(--ft); }
+  .stat-card.pt .stat-value { color: var(--pt); }
+  .stat-card.ok .stat-value { color: var(--green); }
+  .stat-card.warning .stat-value { color: var(--yellow); }
+  .stat-card.suspended .stat-value { color: var(--suspended); }
+  /* Glow on attention cards */
+  .stat-card.expired { animation: glow-red 2s ease-in-out infinite; border-color: rgba(239,68,68,0.3); }
+  .stat-card.expired .stat-value { color: var(--red); }
+  .stat-card.critical { animation: glow-orange 2.5s ease-in-out infinite; border-color: rgba(249,115,22,0.3); }
+  .stat-card.critical .stat-value { color: var(--orange); }
+
+  /* ── CONTROLS ── */
+  .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .search-box { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+  .search-box input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px 8px 36px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-light); pointer-events: none; }
+  .control-group { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
+  .ctrl-btn { padding: 5px 12px; border-radius: 5px; border: none; background: transparent; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.12s; white-space: nowrap; }
+  .ctrl-btn.active { background: var(--accent); color: white; }
+  select.ctrl-select { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 10px; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; cursor: pointer; }
+  .add-btn { background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; margin-left: auto; box-shadow: 0 0 14px rgba(59,130,246,0.3); }
+  .add-btn:hover { opacity: 0.85; }
+
+  /* ── TABLE ── */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .table-header { display: grid; padding: 0 16px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .buggy-grid { grid-template-columns: 2fr 110px 70px 110px 110px 80px 1fr 90px 96px; }
+  .airside-grid { grid-template-columns: 2fr 70px 100px 70px 80px 70px 110px 80px 96px; }
+  .th { padding: 11px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; cursor: pointer; user-select: none; white-space: nowrap; transition: color 0.15s; }
+  .th:hover { color: var(--text); }
+  .th.sorted { color: var(--accent); }
+
+  .driver-row { display: grid; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; min-height: 52px; transition: background 0.1s; }
+  .driver-row:last-child { border-bottom: none; }
+  .driver-row:hover { background: var(--surface2); }
+
+  /* Glow rows for attention items */
+  .driver-row.expired-row {
+    background: rgba(239,68,68,0.06);
+    border-left: 3px solid rgba(239,68,68,0.5);
+    animation: shimmer-red 2s ease-in-out infinite;
+  }
+  .driver-row.critical-row {
+    background: rgba(249,115,22,0.06);
+    border-left: 3px solid rgba(249,115,22,0.5);
+    animation: shimmer-orange 2.5s ease-in-out infinite;
+  }
+  .driver-row.suspended-row { background: var(--suspended-light); opacity: 0.7; }
+
+  .col-pad { padding: 0 8px; }
+  .driver-name { font-size: 13px; font-weight: 600; color: var(--text); padding: 0 8px; }
+  .id-cell, .date-cell, .nric-cell, .phone-cell { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; padding: 0 8px; }
+  .days-cell { font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; padding: 0 8px; }
+  .days-expired { color: var(--red); }
+  .days-critical { color: var(--orange); }
+  .days-warning  { color: var(--yellow); }
+  .days-ok       { color: var(--green); }
+  .days-suspended{ color: var(--suspended); }
+
+  .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; }
+  .type-ft { background: var(--ft-light); color: var(--ft); }
+  .type-pt { background: var(--pt-light); color: var(--pt); }
+
+  .status-badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; }
+  .status-expired { background: var(--red-light); color: var(--red); }
+  .status-critical { background: var(--orange-light); color: var(--orange); }
+  .status-warning { background: var(--yellow-light); color: var(--yellow); }
+  .status-ok { background: var(--green-light); color: var(--green); }
+  .status-suspended { background: var(--suspended-light); color: var(--suspended); }
+
+  .active-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .active-active { background: var(--green-light); color: var(--green); }
+  .active-inactive { background: var(--suspended-light); color: var(--suspended); }
+
+  .prog-wrap { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; margin-bottom: 3px; }
+  .prog-fill { height: 100%; border-radius: 2px; background: var(--green); transition: width 0.3s; }
+  .prog-expired .prog-fill { background: var(--red); }
+  .prog-critical .prog-fill { background: var(--orange); }
+  .prog-warning .prog-fill { background: var(--yellow); }
+  .prog-suspended .prog-fill { background: var(--suspended); }
+  .prog-label { font-size: 10px; color: var(--text-light); font-family: 'DM Mono', monospace; }
+
+  .action-cell { display: flex; gap: 4px; align-items: center; padding: 0 8px; }
+  .btn-icon { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.12s; }
+  .btn-icon:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .btn-icon.suspend:hover, .btn-icon.suspend.active { background: var(--yellow-light); border-color: rgba(234,179,8,0.4); color: var(--yellow); }
+  .btn-icon.del:hover { background: var(--red-light); border-color: rgba(239,68,68,0.4); color: var(--red); }
+
+  .group-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; font-size: 12px; font-weight: 700; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); }
+  .group-header.expired-g { background: rgba(239,68,68,0.08); color: var(--red); border-left: 3px solid var(--red); }
+  .group-header.critical-g { background: rgba(249,115,22,0.08); color: var(--orange); border-left: 3px solid var(--orange); }
+  .group-header.warning-g { background: rgba(234,179,8,0.08); color: var(--yellow); border-left: 3px solid var(--yellow); }
+  .group-header.ok-g { background: rgba(34,197,94,0.08); color: var(--green); border-left: 3px solid var(--green); }
+  .group-header.suspended-g { background: var(--suspended-light); color: var(--suspended); }
+  .group-header.ft-g { background: var(--ft-light); color: var(--ft); }
+  .group-header.pt-g { background: var(--pt-light); color: var(--pt); }
+  .gcount { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 28px; width: 480px; max-width: 95vw; box-shadow: var(--shadow-md); transform: translateY(8px); transition: transform 0.2s; }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+  .form-grid { display: grid; gap: 14px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; }
+  .field input, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--surface2); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .btn-cancel { padding: 9px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-save { padding: 9px 20px; border-radius: var(--radius-sm); border: none; background: var(--accent); color: white; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-cancel:hover { background: var(--surface2); color: var(--text); }
+  .btn-save:hover { opacity: 0.85; }
+
+  /* ── TOAST ── */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface3); border: 1px solid var(--border2); color: var(--text); padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 999; transform: translateY(60px); opacity: 0; transition: all 0.25s; max-width: 320px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.green { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: var(--green); }
+  .toast.red { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: var(--red); }
+
+  /* ── SETUP NOTICE ── */
+  .setup-notice { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--yellow); }
+  .setup-notice.hidden { display: none; }
+
+  /* ── STAFF LOOKUP ── */
+  .lookup-wrap { max-width: 780px; margin: 0 auto; }
+  .lookup-search-box { position: relative; margin-bottom: 28px; }
+  .lookup-search-box input {
+    width: 100%; background: var(--surface); border: 2px solid var(--border);
+    border-radius: var(--radius); padding: 14px 18px 14px 48px;
+    font-size: 16px; font-family: 'DM Sans', sans-serif; color: var(--text);
+    outline: none; transition: border-color 0.2s; box-shadow: var(--shadow);
+    position: relative; z-index: 2;
+  }
+  .lookup-search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+  .lookup-search-box svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-light); pointer-events: none; z-index: 1; }
+  .lookup-search-box .lookup-clear {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: var(--border); border: none; border-radius: 50%; width: 22px; height: 22px;
+    cursor: pointer; color: var(--text-muted); font-size: 13px; display: none;
+    align-items: center; justify-content: center; line-height: 1; z-index: 3;
+  }
+
+  .lookup-hint { text-align: center; color: var(--text-muted); font-size: 13px; padding: 60px 0; }
+  .lookup-hint-icon { font-size: 40px; margin-bottom: 12px; }
+  .lookup-results { display: flex; flex-direction: column; gap: 16px; }
+  .lookup-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: box-shadow 0.15s; }
+  .lookup-card:hover { box-shadow: var(--shadow-md); border-color: var(--border2); }
+  .lookup-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .lookup-card-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .lookup-card-id { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+  .lookup-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lic-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1.5px solid; }
+  .lic-badge.has-buggy   { background: var(--ft-light);    color: var(--ft);    border-color: rgba(167,139,250,0.3); }
+  .lic-badge.has-airside { background: var(--pt-light);    color: var(--pt);    border-color: rgba(34,211,238,0.3); }
+  .lic-badge.both        { background: var(--green-light); color: var(--green); border-color: rgba(34,197,94,0.3); }
+  .lic-badge.none        { background: var(--red-light);   color: var(--red);   border-color: rgba(239,68,68,0.3); }
+  .lookup-licenses { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .lookup-lic { padding: 18px 20px; border-right: 1px solid var(--border); }
+  .lookup-lic:last-child { border-right: none; }
+  .lookup-lic-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .lookup-lic-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .lookup-lic-icon.buggy   { background: var(--ft-light); }
+  .lookup-lic-icon.airside { background: var(--pt-light); }
+  .lookup-lic-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+  .lookup-lic.missing { display: flex; align-items: center; justify-content: center; text-align: center; color: var(--text-light); font-size: 12px; background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.02) 8px, rgba(255,255,255,0.02) 16px); min-height: 120px; }
+  .lookup-lic.missing .miss-icon { font-size: 22px; margin-bottom: 6px; }
+  .lookup-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; }
+  .lookup-row:last-child { margin-bottom: 0; }
+  .lookup-row-label { color: var(--text-muted); }
+  .lookup-row-val { font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; }
+  .lookup-no-results { text-align: center; padding: 48px 20px; color: var(--text-muted); font-size: 13px; }
+  .lookup-no-results strong { color: var(--text); }
+
+  /* ── TABLET ── */
+  @media (max-width: 900px) {
+    .header { padding: 10px 16px; height: auto; flex-wrap: wrap; gap: 8px; }
+    .header-right { gap: 6px; flex-wrap: wrap; }
+    .live-clock { display: none; }
+    .main { padding: 16px; }
+    .buggy-grid, .airside-grid { grid-template-columns: 2fr 80px 70px 100px 80px 90px; }
+    .col-issued, .col-bar, .col-id-airside, .col-phone { display: none; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* ── PHONE ── */
+  @media (max-width: 600px) {
+    /* Login */
+    .login-box { width: 92vw; padding: 36px 24px; }
+
+    /* Header */
+    .header { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 10px; }
+    .header-right { width: 100%; justify-content: space-between; }
+    .tab-switcher { width: 100%; }
+    .tab-btn { flex: 1; text-align: center; padding: 7px 4px; font-size: 11px; }
+    .save-indicator { font-size: 10px; min-width: 80px; padding: 4px 6px; }
+    .logout-btn { font-size: 11px; padding: 5px 10px; }
+
+    /* Notif bar */
+    .notif-bar { padding: 8px 12px; gap: 6px; }
+    .notif-chip { font-size: 11px; padding: 5px 10px; }
+
+    /* Main */
+    .main { padding: 12px; }
+
+    /* Stats — 2 columns */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card { padding: 14px; }
+    .stat-value { font-size: 22px; }
+
+    /* Controls */
+    .controls { flex-direction: column; align-items: stretch; gap: 8px; }
+    .search-box { max-width: 100%; }
+    .control-group { justify-content: center; }
+    .ctrl-btn { flex: 1; text-align: center; }
+    .add-btn { margin-left: 0; justify-content: center; }
+    select.ctrl-select { width: 100%; }
+
+    /* Table — card layout on mobile */
+    .table-header { display: none; }
+    .driver-row {
+      display: flex !important;
+      flex-direction: column;
+      padding: 14px 16px;
+      gap: 6px;
+      min-height: auto;
+    }
+    .driver-row > * { padding: 0 !important; }
+    .driver-name { font-size: 14px; margin-bottom: 2px; }
+    .id-cell, .nric-cell { font-size: 12px; }
+    .col-issued, .col-bar, .col-id-airside, .col-phone { display: block; }
+    .days-cell { font-size: 13px; }
+    .action-cell { justify-content: flex-end; padding-top: 4px !important; border-top: 1px solid var(--border); margin-top: 4px; }
+    .btn-icon { width: 34px; height: 34px; }
+
+    /* Group headers */
+    .group-header { padding: 8px 16px; font-size: 11px; }
+
+    /* Lookup */
+    .lookup-wrap { padding: 0; }
+    .lookup-search-box input { font-size: 14px; padding: 12px 16px 12px 42px; }
+    .lookup-licenses { grid-template-columns: 1fr; }
+    .lookup-lic { border-right: none; border-bottom: 1px solid var(--border); }
+    .lookup-lic:last-child { border-bottom: none; }
+    .lookup-card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+    /* Modals */
+    .modal { padding: 20px 16px; width: 96vw; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+    </div>
+    <div class="login-title">JetQuay CIP</div>
+    <div class="login-sub">License &amp; Permit Management · Changi Airport</div>
+    <label class="login-label" for="loginPass">Password</label>
+    <input class="login-input" id="loginPass" type="password" placeholder="Enter access password" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>
+    <div>
+      <div class="header-title">JetQuay Driver License Tracker</div>
+      <div class="header-sub" id="headerSub">Loading…</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="tab-switcher">
+      <button class="tab-btn active" onclick="switchTab('buggy')">🚗 Buggy Drivers</button>
+      <button class="tab-btn" onclick="switchTab('airside')">✈️ Airside ADP</button>
+      <button class="tab-btn" onclick="switchTab('lookup')">🔍 Staff Lookup</button>
+    </div>
+    <div class="live-clock">
+      <div class="clock-date" id="clockDate"></div>
+      <div class="clock-time" id="clockTime"></div>
+    </div>
+    <div class="save-indicator" id="saveIndicator"></div>
+    <button class="logout-btn" onclick="doLogout()">Log out</button>
+  </div>
+</header>
+
+<!-- NOTIFICATIONS -->
+<div class="notif-bar" id="notifBar"></div>
+
+<main class="main">
+  <!-- Setup notice shown until Google Script URL is configured -->
+  <div class="setup-notice" id="setupNotice">
+    ⚙️ <span><strong>Setup required:</strong> Open this file, find <code>GOOGLE_SCRIPT_URL</code> at the top of the script, and paste your Google Apps Script Web App URL. <a href="#" onclick="document.getElementById('setupNotice').classList.add('hidden')">Dismiss</a></span>
+  </div>
+
+  <!-- ── BUGGY PANEL ── -->
+  <div class="panel active" id="panel-buggy">
+    <div class="stats-grid" id="buggyStats"></div>
+    <div class="controls">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search name or ID…" oninput="buggy.search=this.value;buggy.render()" id="buggySearch">
+      </div>
+      <div class="control-group">
+        <button class="ctrl-btn active" onclick="buggy.setType('all',this)">All</button>
+        <button class="ctrl-btn" onclick="buggy.setType('FT',this)">FT</button>
+        <button class="ctrl-btn" onclick="buggy.setType('PT',this)">PT</button>
+      </div>
+      <div class="control-group">
+        <button class="ctrl-btn active" onclick="buggy.setStatus('all',this)">All Status</button>
+        <button class="ctrl-btn" onclick="buggy.setStatus('expired',this)">Expired</button>
+        <button class="ctrl-btn" onclick="buggy.setStatus('critical',this)">Critical</button>
+        <button class="ctrl-btn" onclick="buggy.setStatus('warning',this)">Warning</button>
+      </div>
+      <select class="ctrl-select" onchange="buggy.group=this.value;buggy.render()">
+        <option value="month">Group: Month</option>
+        <option value="status">Group: Status</option>
+        <option value="type">Group: Type</option>
+        <option value="none">No grouping</option>
+      </select>
+      <select class="ctrl-select" onchange="buggy.sort=this.value;buggy.render()">
+        <option value="expiry">Sort: Expiry Date</option>
+        <option value="name">Sort: Name A–Z</option>
+        <option value="days_asc">Sort: Soonest First</option>
+        <option value="days_desc">Sort: Latest First</option>
+        <option value="type">Sort: Type</option>
+        <option value="id">Sort: ID</option>
+      </select>
+      <button class="add-btn" onclick="buggy.openModal(null)">+ Add Driver</button>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header buggy-grid">
+        <div class="th">Name</div>
+        <div class="th">Staff ID</div>
+        <div class="th">Type</div>
+        <div class="th col-issued">Issued</div>
+        <div class="th">Expiry</div>
+        <div class="th">Days Left</div>
+        <div class="th col-bar">Progress</div>
+        <div class="th">Status</div>
+        <div class="th">Actions</div>
+      </div>
+      <div id="buggyBody"></div>
+    </div>
+  </div>
+
+  <!-- ── AIRSIDE PANEL ── -->
+  <div class="panel" id="panel-airside">
+    <div class="stats-grid" id="airsideStats"></div>
+    <div class="controls">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search name or NRIC…" oninput="airside.search=this.value;airside.render()" id="airsideSearch">
+      </div>
+      <div class="control-group">
+        <button class="ctrl-btn active" onclick="airside.setType('all',this)">All</button>
+        <button class="ctrl-btn" onclick="airside.setType('FT',this)">FT</button>
+        <button class="ctrl-btn" onclick="airside.setType('PT',this)">PT</button>
+      </div>
+      <div class="control-group">
+        <button class="ctrl-btn active" onclick="airside.setActiveFilter('all',this)">All</button>
+        <button class="ctrl-btn" onclick="airside.setActiveFilter('Active',this)">Active</button>
+        <button class="ctrl-btn" onclick="airside.setActiveFilter('Inactive',this)">Inactive</button>
+      </div>
+      <select class="ctrl-select" onchange="airside.group=this.value;airside.render()">
+        <option value="month">Group: Month</option>
+        <option value="status">Group: Status</option>
+        <option value="type">Group: Type</option>
+        <option value="none">No grouping</option>
+      </select>
+      <select class="ctrl-select" onchange="airside.sort=this.value;airside.render()">
+        <option value="expiry">Sort: Expiry Date</option>
+        <option value="name">Sort: Name A–Z</option>
+        <option value="days_asc">Sort: Soonest First</option>
+        <option value="days_desc">Sort: Latest First</option>
+        <option value="type">Sort: Type</option>
+      </select>
+      <button class="add-btn" onclick="airside.openModal(null)">+ Add Driver</button>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header airside-grid">
+        <div class="th">Name</div>
+        <div class="th col-id-airside">NRIC</div>
+        <div class="th col-phone">Phone</div>
+        <div class="th">Type</div>
+        <div class="th">Active</div>
+        <div class="th">Permit</div>
+        <div class="th">Expiry</div>
+        <div class="th">Days Left</div>
+        <div class="th">Actions</div>
+      </div>
+      <div id="airsideBody"></div>
+    </div>
+  </div>
+  <!-- ── LOOKUP PANEL ── -->
+  <div class="panel" id="panel-lookup">
+    <div class="lookup-wrap">
+      <div class="lookup-search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="lookupInput" placeholder="Type a staff name to check their licenses…" autocomplete="off" spellcheck="false">
+        <button class="lookup-clear" id="lookupClear" onclick="clearLookup()" style="display:none">✕</button>
+      </div>
+      <div id="lookupResults">
+        <div class="lookup-hint">
+          <div class="lookup-hint-icon">🪪</div>
+          <div>Search by name to see if a staff member holds a<br><strong>Buggy License</strong>, an <strong>Airside ADP</strong>, or both.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── MODALS ── -->
+<div class="modal-overlay" id="buggyModal">
+  <div class="modal">
+    <div class="modal-title" id="buggyModalTitle">Add Buggy Driver</div>
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input id="bName" type="text" placeholder="e.g. John Tan Wei Ming"></div>
+      <div class="form-row">
+        <div class="field"><label>Staff ID</label><input id="bId" type="text" placeholder="JQ01234"></div>
+        <div class="field"><label>Type</label><select id="bType"><option value="FT">FT – Full-Time</option><option value="PT">PT – Part-Time</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Issued Date</label><input id="bIssued" type="date"></div>
+        <div class="field"><label>Expiry Date</label><input id="bExpiry" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('buggyModal').classList.remove('show')">Cancel</button>
+      <button class="btn-save" onclick="buggy.saveDriver()">Save Driver</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="airsideModal">
+  <div class="modal">
+    <div class="modal-title" id="airsideModalTitle">Add Airside Driver</div>
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input id="aName" type="text" placeholder="e.g. JOHN TAN WEI MING"></div>
+      <div class="form-row">
+        <div class="field"><label>NRIC (last 4)</label><input id="aNric" type="text" placeholder="123A" maxlength="4"></div>
+        <div class="field"><label>Phone</label><input id="aPhone" type="text" placeholder="91234567"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Type</label><select id="aType"><option value="FT">FT – Full-Time</option><option value="PT">PT – Part-Time</option></select></div>
+        <div class="field"><label>Status</label><select id="aActive"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Permit</label><select id="aPermit"><option value="ADP">ADP</option><option value="TADP">TADP</option></select></div>
+        <div class="field"><label>Expiry Date</label><input id="aExpiry" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('airsideModal').classList.remove('show')">Cancel</button>
+      <button class="btn-save" onclick="airside.saveDriver()">Save Driver</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  CONFIGURATION — REPLACE THIS URL after deploying Google Apps Script
+// ═══════════════════════════════════════════════════════════════════
+const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+// ═══════════════════════════════════════════════════════════════════
+
+// Simple password gate — change this to your preferred password
+const ACCESS_PASSWORD = 'JetQuay2024!';
+
+// ── LOGIN ──────────────────────────────────────────────────────────
+function doLogin() {
+  const pw = document.getElementById('loginPass').value;
+  if (pw === ACCESS_PASSWORD) {
+    sessionStorage.setItem('jq_auth', '1');
+    document.getElementById('loginScreen').classList.add('hidden');
+    initApp();
+  } else {
+    document.getElementById('loginErr').textContent = 'Incorrect password. Try again.';
+    document.getElementById('loginPass').value = '';
+  }
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  sessionStorage.removeItem('jq_auth');
+  location.reload();
+}
+
+// Auto-login if session exists
+if (sessionStorage.getItem('jq_auth') === '1') {
+  document.getElementById('loginScreen').classList.add('hidden');
+  initApp();
+}
+
+// ── CLOCK ──────────────────────────────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clockDate').textContent = now.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+  document.getElementById('clockTime').textContent = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ── TAB ────────────────────────────────────────────────────────────
+let currentTab = 'buggy';
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i===0&&tab==='buggy')||(i===1&&tab==='airside')||(i===2&&tab==='lookup'));
+  });
+  if (tab !== 'lookup') renderNotifications();
+  else {
+    document.getElementById('notifBar').innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:4px 0">Search across both dashboards to check a staff member\'s license status.</div>';
+    // Re-run lookup if there's already a query
+    const q = document.getElementById('lookupInput').value;
+    if (q.trim()) runLookup(q);
+  }
+}
+
+// ── STAFF LOOKUP ───────────────────────────────────────────────────
+function normName(n) { return n.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim(); }
+
+function nameSimilarity(a, b) {
+  const na = normName(a), nb = normName(b);
+  if (na === nb) return 1;
+  if (na.includes(nb) || nb.includes(na)) return 0.9;
+  // Check if all words in query appear somewhere in the name
+  const qWords = nb.split(' ').filter(w => w.length > 1);
+  const nameWords = na.split(' ');
+  const matchCount = qWords.filter(qw => nameWords.some(nw => nw.startsWith(qw))).length;
+  return matchCount / qWords.length;
+}
+
+function clearLookup() {
+  document.getElementById('lookupInput').value = '';
+  document.getElementById('lookupResults').innerHTML = `
+    <div class="lookup-hint">
+      <div class="lookup-hint-icon">🪪</div>
+      <div>Search by name to see if a staff member holds a<br><strong>Buggy License</strong>, an <strong>Airside ADP</strong>, or both.</div>
+    </div>`;
+}
+
+function runLookup(query) {
+  const q = query.trim();
+  const container = document.getElementById('lookupResults');
+
+  if (q.length < 2) {
+    clearLookup();
+    return;
+  }
+
+  // Find matches in buggy list (score ≥ 0.5)
+  const buggyMatches = buggy.drivers
+    .map(d => ({ d, score: nameSimilarity(d.name, q) }))
+    .filter(x => x.score >= 0.5)
+    .sort((a,b) => b.score - a.score)
+    .map(x => x.d);
+
+  // Find matches in airside list (score ≥ 0.5)
+  const airsideMatches = airside.drivers
+    .map(d => ({ d, score: nameSimilarity(d.name, q) }))
+    .filter(x => x.score >= 0.5)
+    .sort((a,b) => b.score - a.score)
+    .map(x => x.d);
+
+  // Build a unified list of unique staff names (matched across both)
+  const allNames = new Set([
+    ...buggyMatches.map(d => normName(d.name)),
+    ...airsideMatches.map(d => normName(d.name))
+  ]);
+
+  if (!allNames.size) {
+    container.innerHTML = `<div class="lookup-no-results">No staff found matching <strong>"${q}"</strong><br><span style="font-size:11px;margin-top:6px;display:block">Try a partial name, e.g. "hamri" or "koh boon"</span></div>`;
+    return;
+  }
+
+  // For each unique normalised name, collect all buggy + airside entries
+  // (one person could have multiple rows if they appear twice — show all)
+  const cards = [];
+
+  // Group buggy entries by normalised name
+  const buggyByNorm = {};
+  buggyMatches.forEach(d => {
+    const k = normName(d.name);
+    if (!buggyByNorm[k]) buggyByNorm[k] = [];
+    buggyByNorm[k].push(d);
+  });
+  const airsideByNorm = {};
+  airsideMatches.forEach(d => {
+    const k = normName(d.name);
+    if (!airsideByNorm[k]) airsideByNorm[k] = [];
+    airsideByNorm[k].push(d);
+  });
+
+  allNames.forEach(normN => {
+    const bEntries = buggyByNorm[normN] || [];
+    const aEntries = airsideByNorm[normN] || [];
+    // Use the display name from whichever list has it (prefer buggy title-case)
+    const displayName = (bEntries[0] || aEntries[0]).name;
+    cards.push(buildLookupCard(displayName, bEntries, aEntries));
+  });
+
+  container.innerHTML = `<div class="lookup-results">${cards.join('')}</div>`;
+}
+
+function licStatusPill(days, suspended) {
+  const s = getStatus(days, suspended);
+  const labels = { ok:'Valid', warning:'Warning', critical:'Critical', expired:'Expired', suspended:'Suspended' };
+  return `<span class="status-badge status-${s}">${labels[s]}</span>`;
+}
+
+function buildLookupCard(displayName, bEntries, aEntries) {
+  const hasBuggy   = bEntries.length > 0;
+  const hasAirside = aEntries.length > 0;
+  const hasBoth    = hasBuggy && hasAirside;
+
+  // Coverage badge
+  let coverBadge = '';
+  if (hasBoth)    coverBadge = `<span class="lic-badge both">🚗✈️ Both licenses</span>`;
+  else if (hasBuggy)   coverBadge = `<span class="lic-badge has-buggy">🚗 Buggy only</span>`;
+  else if (hasAirside) coverBadge = `<span class="lic-badge has-airside">✈️ Airside only</span>`;
+
+  // Buggy section
+  let buggySection = '';
+  if (hasBuggy) {
+    buggySection = bEntries.map(d => {
+      const days = daysLeft(d.expiry);
+      return `
+        <div style="margin-bottom:${bEntries.length>1?'14px':'0'}">
+          <div class="lookup-row"><span class="lookup-row-label">Staff ID</span><span class="lookup-row-val">${d.id}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Type</span><span class="lookup-row-val"><span class="type-badge type-${d.type.toLowerCase()}">${d.type}</span></span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Issued</span><span class="lookup-row-val">${fmtDate(d.issued)}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Expiry</span><span class="lookup-row-val">${fmtDate(d.expiry)}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Days left</span><span class="lookup-row-val days-${getStatus(days,d.suspended)}">${d.suspended?'Suspended':days<0?`Expired ${Math.abs(days)}d ago`:days+'d'}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Status</span>${licStatusPill(days,d.suspended)}</div>
+        </div>`;
+    }).join('<hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">');
+  } else {
+    buggySection = `<div class="lookup-lic missing"><div class="miss-inner"><div class="miss-icon">🚫</div>No Buggy License</div></div>`;
+  }
+
+  // Airside section
+  let airsideSection = '';
+  if (hasAirside) {
+    airsideSection = aEntries.map(d => {
+      const days = daysLeft(d.expiry);
+      return `
+        <div style="margin-bottom:${aEntries.length>1?'14px':'0'}">
+          <div class="lookup-row"><span class="lookup-row-label">NRIC (last 4)</span><span class="lookup-row-val">${d.nric||'—'}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Phone</span><span class="lookup-row-val">${d.phone||'—'}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Type</span><span class="lookup-row-val"><span class="type-badge type-${d.type.toLowerCase()}">${d.type}</span></span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Active</span><span class="lookup-row-val"><span class="active-badge active-${(d.active||'Active').toLowerCase()}">${d.active||'Active'}</span></span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Permit</span><span class="lookup-row-val">${d.permit||'ADP'}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Expiry</span><span class="lookup-row-val">${fmtDate(d.expiry)}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Days left</span><span class="lookup-row-val days-${getStatus(days,d.suspended)}">${d.suspended?'Suspended':days<0?`Expired ${Math.abs(days)}d ago`:days+'d'}</span></div>
+          <div class="lookup-row"><span class="lookup-row-label">Status</span>${licStatusPill(days,d.suspended)}</div>
+        </div>`;
+    }).join('<hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">');
+  } else {
+    airsideSection = `<div class="lookup-lic missing"><div class="miss-inner"><div class="miss-icon">🚫</div>No Airside ADP</div></div>`;
+  }
+
+  return `
+    <div class="lookup-card">
+      <div class="lookup-card-header">
+        <div>
+          <div class="lookup-card-name">${displayName}</div>
+          ${bEntries[0]?.id ? `<div class="lookup-card-id">${bEntries[0].id}</div>` : ''}
+        </div>
+        <div class="lookup-badges">${coverBadge}</div>
+      </div>
+      <div class="lookup-licenses">
+        <div class="lookup-lic ${!hasBuggy?'missing':''}">
+          ${hasBuggy ? `
+            <div class="lookup-lic-header">
+              <div class="lookup-lic-icon buggy">🚗</div>
+              <div class="lookup-lic-title">Buggy License</div>
+            </div>
+            ${buggySection}` : buggySection}
+        </div>
+        <div class="lookup-lic ${!hasAirside?'missing':''}">
+          ${hasAirside ? `
+            <div class="lookup-lic-header">
+              <div class="lookup-lic-icon airside">✈️</div>
+              <div class="lookup-lic-title">Airside ADP</div>
+            </div>
+            ${airsideSection}` : airsideSection}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────
+function showToast(msg, cls='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + cls;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── SAVE INDICATOR ─────────────────────────────────────────────────
+function setSave(state, msg='') {
+  const el = document.getElementById('saveIndicator');
+  const labels = { saved: '✓ Saved', saving: '⏳ Saving…', error: '⚠ Save failed' };
+  el.textContent = msg || labels[state] || '';
+  el.className = 'save-indicator ' + state;
+  if (state === 'saved') setTimeout(() => { el.textContent = ''; el.className = 'save-indicator'; }, 3000);
+}
+
+// ── GOOGLE SHEETS API ──────────────────────────────────────────────
+async function saveToSheets(sheet, data) {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE')) {
+    // No script URL — just show local indicator
+    setSave('saved', '✓ Saved locally');
+    return;
+  }
+  setSave('saving');
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ sheet, data })
+    });
+    setSave('saved');
+    showToast('Changes saved to Google Sheets', 'green');
+  } catch (e) {
+    setSave('error');
+    showToast('Save failed — check connection', 'red');
+  }
+}
+
+async function loadFromSheets(sheet) {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE')) return null;
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL + '?sheet=' + sheet);
+    const json = await res.json();
+    return json.data || null;
+  } catch { return null; }
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────
+const TODAY = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
+function daysLeft(str) { const e = new Date(str); e.setHours(0,0,0,0); return Math.round((e-TODAY)/86400000); }
+function getStatus(days, suspended) {
+  if (suspended) return 'suspended';
+  if (days < 0) return 'expired';
+  if (days <= 30) return 'critical';
+  if (days <= 90) return 'warning';
+  return 'ok';
+}
+function fmtDate(str) { return new Date(str).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+function progress(iss, exp) {
+  const i=new Date(iss).getTime(), e=new Date(exp).getTime(), n=TODAY.getTime();
+  return Math.min(Math.max((n-i)/(e-i),0),1);
+}
+function statusLabel(d, s) {
+  if (s) return 'Suspended'; if (d<0) return 'Expired'; if (d<=30) return 'Critical'; if (d<=90) return 'Warning'; return 'Valid';
+}
+
+// ── GROUP/ROW HELPERS ──────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function groupHeaderHTML(label, count, cls) {
+  return `<div class="group-header ${cls}"><span>${label}</span><span class="gcount">${count}</span></div>`;
+}
+function renderGroups(items, rowFn, groupMode) {
+  if (groupMode === 'none') return items.map(rowFn).join('');
+  if (groupMode === 'month') {
+    const keys = [...new Set(items.map(d=>d.expiry.slice(0,7)))].sort();
+    let html='';
+    for (const ym of keys) {
+      const grp = items.filter(d=>d.expiry.slice(0,7)===ym);
+      if (!grp.length) continue;
+      const [yr,mo] = ym.split('-');
+      const clsMap={suspended:'suspended-g',expired:'expired-g',critical:'critical-g',warning:'warning-g',ok:'ok-g'};
+      html += groupHeaderHTML(`📅 ${MONTHS[parseInt(mo)-1]} ${yr}`, grp.length, clsMap[grp[0].status]||'ok-g');
+      html += grp.map(rowFn).join('');
+    }
+    return html;
+  }
+  if (groupMode === 'status') {
+    const groups = [
+      {key:'suspended',label:'⛔ Suspended',cls:'suspended-g'},
+      {key:'expired',label:'🔴 Expired',cls:'expired-g'},
+      {key:'critical',label:'🟠 Expiring ≤30 days',cls:'critical-g'},
+      {key:'warning',label:'🟡 Expiring ≤90 days',cls:'warning-g'},
+      {key:'ok',label:'🟢 Valid (>90 days)',cls:'ok-g'},
+    ];
+    let html='';
+    for (const g of groups) {
+      const grp=items.filter(d=>d.status===g.key);
+      if (!grp.length) continue;
+      html += groupHeaderHTML(g.label,grp.length,g.cls) + grp.map(rowFn).join('');
+    }
+    return html;
+  }
+  if (groupMode === 'type') {
+    let html='';
+    for (const t of ['FT','PT']) {
+      const grp=items.filter(d=>d.type===t);
+      if (!grp.length) continue;
+      html += groupHeaderHTML(t==='FT'?'🟣 Full-Time (FT)':'🔵 Part-Time (PT)',grp.length,t==='FT'?'ft-g':'pt-g') + grp.map(rowFn).join('');
+    }
+    return html;
+  }
+  return items.map(rowFn).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  BUGGY DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+const buggy = {
+  drivers: [],
+  search: '', filterType: 'all', filterStatus: 'all',
+  sort: 'expiry', group: 'month',
+  editIdx: null,
+
+  init(data) { this.drivers = data; this.render(); },
+
+  getFiltered() {
+    return this.drivers.map((d,i) => {
+      const days=daysLeft(d.expiry), status=getStatus(days,d.suspended);
+      return {...d,days,status,_idx:i};
+    }).filter(d => {
+      const q=this.search.toLowerCase();
+      return (!q||d.name.toLowerCase().includes(q)||d.id.toLowerCase().includes(q))
+        && (this.filterType==='all'||d.type===this.filterType)
+        && (this.filterStatus==='all'||d.status===this.filterStatus);
+    }).sort((a,b) => {
+      if (this.sort==='name') return a.name.localeCompare(b.name);
+      if (this.sort==='days_asc') return a.days-b.days;
+      if (this.sort==='days_desc') return b.days-a.days;
+      if (this.sort==='expiry') return new Date(a.expiry)-new Date(b.expiry);
+      if (this.sort==='type') return a.type.localeCompare(b.type)||a.days-b.days;
+      if (this.sort==='id') return a.id.localeCompare(b.id);
+      return 0;
+    });
+  },
+
+  rowHTML(d) {
+    const prog=progress(d.issued,d.expiry), pct=Math.round(prog*100);
+    const sc=d.status, susp=d.suspended;
+    const rowCls=susp?'suspended-row':sc==='expired'?'expired-row':sc==='critical'?'critical-row':'';
+    const nameStyle=susp?'style="text-decoration:line-through;color:var(--text-muted)"':'';
+    return `<div class="driver-row buggy-grid ${rowCls}" id="brow-${d._idx}">
+      <div class="driver-name" ${nameStyle}>${d.name}</div>
+      <div class="id-cell">${d.id}</div>
+      <div class="col-pad"><span class="type-badge type-${d.type.toLowerCase()}">${d.type}</span></div>
+      <div class="date-cell col-issued">${fmtDate(d.issued)}</div>
+      <div class="date-cell">${fmtDate(d.expiry)}</div>
+      <div class="days-cell days-${sc}">${susp?'—':d.days<0?`-${Math.abs(d.days)}d`:d.days+'d'}</div>
+      <div class="col-bar col-pad">
+        <div class="prog-wrap prog-${sc}"><div class="prog-fill" style="width:${susp?100:pct}%"></div></div>
+        <div class="prog-label">${susp?'Suspended':pct+'% elapsed'}</div>
+      </div>
+      <div class="col-pad"><span class="status-badge status-${sc}">${statusLabel(d.days,susp)}</span></div>
+      <div class="action-cell">
+        <button class="btn-icon" title="Edit" onclick="buggy.openModal(${d._idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 2.5 2.5L12 14H9v-3z"/></svg>
+        </button>
+        <button class="btn-icon suspend ${susp?'active':''}" title="${susp?'Unsuspend':'Suspend'}" onclick="buggy.toggleSuspend(${d._idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </button>
+        <button class="btn-icon del" title="Delete" onclick="buggy.deleteDriver(${d._idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 13.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 6"/><path d="m10 11 0 6m4-6 0 6"/></svg>
+        </button>
+      </div>
+    </div>`;
+  },
+
+  render() {
+    const filtered = this.getFiltered();
+    const body = document.getElementById('buggyBody');
+    if (!filtered.length) { body.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div>No drivers match your filters.</div>`; }
+    else body.innerHTML = renderGroups(filtered, d=>this.rowHTML(d), this.group);
+    this.renderStats();
+    if (currentTab==='buggy') renderNotifications();
+  },
+
+  renderStats() {
+    const all = this.drivers.map(d => {const days=daysLeft(d.expiry);return{...d,days,status:getStatus(days,d.suspended)};});
+    const c = {
+      total:all.length, ft:all.filter(d=>d.type==='FT').length, pt:all.filter(d=>d.type==='PT').length,
+      expired:all.filter(d=>d.status==='expired').length, critical:all.filter(d=>d.status==='critical').length,
+      warning:all.filter(d=>d.status==='warning').length, ok:all.filter(d=>d.status==='ok').length,
+      suspended:all.filter(d=>d.status==='suspended').length,
+    };
+    document.getElementById('buggyStats').innerHTML = `
+      <div class="stat-card all" onclick="buggy.setStatus('all',null)"><div class="stat-label">Total</div><div class="stat-value">${c.total}</div><div class="stat-sub">All drivers</div></div>
+      <div class="stat-card ft" onclick="buggy.setType('FT',null)"><div class="stat-label">Full-Time</div><div class="stat-value">${c.ft}</div><div class="stat-sub">${Math.round(c.ft/c.total*100)||0}% of team</div></div>
+      <div class="stat-card pt" onclick="buggy.setType('PT',null)"><div class="stat-label">Part-Time</div><div class="stat-value">${c.pt}</div><div class="stat-sub">${Math.round(c.pt/c.total*100)||0}% of team</div></div>
+      <div class="stat-card expired" onclick="buggy.setStatus('expired',null)"><div class="stat-label">Expired</div><div class="stat-value">${c.expired}</div><div class="stat-sub">Action needed</div></div>
+      <div class="stat-card critical" onclick="buggy.setStatus('critical',null)"><div class="stat-label">≤30 Days</div><div class="stat-value">${c.critical}</div><div class="stat-sub">Critical</div></div>
+      <div class="stat-card warning" onclick="buggy.setStatus('warning',null)"><div class="stat-label">≤90 Days</div><div class="stat-value">${c.warning}</div><div class="stat-sub">Warning</div></div>
+      <div class="stat-card ok" onclick="buggy.setStatus('ok',null)"><div class="stat-label">Valid</div><div class="stat-value">${c.ok}</div><div class="stat-sub">&gt;90 days left</div></div>
+      <div class="stat-card suspended" onclick="buggy.setStatus('suspended',null)"><div class="stat-label">Suspended</div><div class="stat-value">${c.suspended}</div><div class="stat-sub">Inactive</div></div>`;
+  },
+
+  setType(t, btn) {
+    this.filterType=t;
+    if (btn) { btn.closest('.control-group').querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+    this.render();
+  },
+  setStatus(s, btn) {
+    this.filterStatus=s;
+    if (btn) { btn.closest('.control-group').querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+    this.render();
+  },
+
+  toggleSuspend(idx) {
+    this.drivers[idx].suspended = !this.drivers[idx].suspended;
+    this.render(); this.save();
+    showToast(this.drivers[idx].suspended?'Driver suspended':'Driver unsuspended');
+  },
+
+  deleteDriver(idx) {
+    if (!confirm(`Delete ${this.drivers[idx].name}?`)) return;
+    this.drivers.splice(idx,1); this.render(); this.save();
+    showToast('Driver deleted');
+  },
+
+  openModal(idx) {
+    this.editIdx = idx;
+    document.getElementById('buggyModalTitle').textContent = idx===null?'Add Buggy Driver':'Edit Driver';
+    const d = idx!==null ? this.drivers[idx] : {};
+    document.getElementById('bName').value = d.name||'';
+    document.getElementById('bId').value = d.id||'';
+    document.getElementById('bType').value = d.type||'FT';
+    document.getElementById('bIssued').value = d.issued||'';
+    document.getElementById('bExpiry').value = d.expiry||'';
+    document.getElementById('buggyModal').classList.add('show');
+  },
+
+  saveDriver() {
+    const name=document.getElementById('bName').value.trim();
+    const id=document.getElementById('bId').value.trim();
+    const issued=document.getElementById('bIssued').value;
+    const expiry=document.getElementById('bExpiry').value;
+    if (!name||!id||!issued||!expiry) { showToast('All fields are required','red'); return; }
+    const entry = { name, id, type:document.getElementById('bType').value, issued, expiry, suspended:false };
+    if (this.editIdx!==null) { entry.suspended=this.drivers[this.editIdx].suspended; this.drivers[this.editIdx]=entry; }
+    else { this.drivers.push(entry); this.drivers.sort((a,b)=>a.name.localeCompare(b.name)); }
+    document.getElementById('buggyModal').classList.remove('show');
+    this.render(); this.save();
+    showToast(this.editIdx!==null?'Driver updated':'Driver added','green');
+  },
+
+  save() { saveToSheets('buggy', this.drivers); }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+//  AIRSIDE DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+const airside = {
+  drivers: [],
+  search: '', filterType: 'all', filterActive: 'all',
+  sort: 'expiry', group: 'month',
+  editIdx: null,
+
+  init(data) { this.drivers = data; this.render(); },
+
+  getFiltered() {
+    return this.drivers.map((d,i) => {
+      const days=daysLeft(d.expiry), status=getStatus(days,d.suspended);
+      return {...d,days,status,_idx:i};
+    }).filter(d => {
+      const q=this.search.toLowerCase();
+      return (!q||d.name.toLowerCase().includes(q)||(d.nric||'').toLowerCase().includes(q))
+        && (this.filterType==='all'||d.type===this.filterType)
+        && (this.filterActive==='all'||d.active===this.filterActive);
+    }).sort((a,b) => {
+      if (this.sort==='name') return a.name.localeCompare(b.name);
+      if (this.sort==='days_asc') return a.days-b.days;
+      if (this.sort==='days_desc') return b.days-a.days;
+      if (this.sort==='expiry') return new Date(a.expiry)-new Date(b.expiry);
+      if (this.sort==='type') return a.type.localeCompare(b.type)||a.days-b.days;
+      return 0;
+    });
+  },
+
+  rowHTML(d) {
+    const sc=d.status, susp=d.suspended;
+    const rowCls=susp?'suspended-row':sc==='expired'?'expired-row':sc==='critical'?'critical-row':'';
+    const nameStyle=susp?'style="text-decoration:line-through;color:var(--text-muted)"':'';
+    return `<div class="driver-row airside-grid ${rowCls}">
+      <div class="driver-name" ${nameStyle}>${d.name}</div>
+      <div class="nric-cell col-id-airside">${d.nric||'—'}</div>
+      <div class="phone-cell col-phone">${d.phone||'—'}</div>
+      <div class="col-pad"><span class="type-badge type-${d.type.toLowerCase()}">${d.type}</span></div>
+      <div class="col-pad"><span class="active-badge active-${(d.active||'Active').toLowerCase()}">${d.active||'Active'}</span></div>
+      <div class="col-pad" style="font-size:12px;color:var(--text-muted)">${d.permit||'ADP'}</div>
+      <div class="date-cell">${fmtDate(d.expiry)}</div>
+      <div class="days-cell days-${sc}">${susp?'—':d.days<0?`-${Math.abs(d.days)}d`:d.days+'d'}</div>
+      <div class="action-cell">
+        <button class="btn-icon" title="Edit" onclick="airside.openModal(${d._idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 2.5 2.5L12 14H9v-3z"/></svg>
+        </button>
+        <button class="btn-icon suspend ${susp?'active':''}" title="${susp?'Unsuspend':'Suspend'}" onclick="airside.toggleSuspend(${d._idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </button>
+        <button class="btn-icon del" title="Delete" onclick="airside.deleteDriver(${d._idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 13.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 6"/></svg>
+        </button>
+      </div>
+    </div>`;
+  },
+
+  render() {
+    const filtered = this.getFiltered();
+    const body = document.getElementById('airsideBody');
+    if (!filtered.length) { body.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div>No drivers match your filters.</div>`; }
+    else body.innerHTML = renderGroups(filtered, d=>this.rowHTML(d), this.group);
+    this.renderStats();
+    if (currentTab==='airside') renderNotifications();
+  },
+
+  renderStats() {
+    const all = this.drivers.map(d => {const days=daysLeft(d.expiry);return{...d,days,status:getStatus(days,d.suspended)};});
+    const c = {
+      total:all.length, ft:all.filter(d=>d.type==='FT').length, pt:all.filter(d=>d.type==='PT').length,
+      active:all.filter(d=>d.active==='Active').length, inactive:all.filter(d=>d.active==='Inactive').length,
+      expired:all.filter(d=>d.status==='expired').length, critical:all.filter(d=>d.status==='critical').length,
+      warning:all.filter(d=>d.status==='warning').length, ok:all.filter(d=>d.status==='ok').length,
+    };
+    document.getElementById('airsideStats').innerHTML = `
+      <div class="stat-card all"><div class="stat-label">Total</div><div class="stat-value">${c.total}</div><div class="stat-sub">All permits</div></div>
+      <div class="stat-card ft"><div class="stat-label">Full-Time</div><div class="stat-value">${c.ft}</div><div class="stat-sub">${Math.round(c.ft/c.total*100)||0}%</div></div>
+      <div class="stat-card pt"><div class="stat-label">Part-Time</div><div class="stat-value">${c.pt}</div><div class="stat-sub">${Math.round(c.pt/c.total*100)||0}%</div></div>
+      <div class="stat-card ok"><div class="stat-label">Active</div><div class="stat-value">${c.active}</div><div class="stat-sub">Working</div></div>
+      <div class="stat-card suspended"><div class="stat-label">Inactive</div><div class="stat-value">${c.inactive}</div><div class="stat-sub">Off roster</div></div>
+      <div class="stat-card expired"><div class="stat-label">Expired</div><div class="stat-value">${c.expired}</div><div class="stat-sub">Renew now</div></div>
+      <div class="stat-card critical"><div class="stat-label">≤30 Days</div><div class="stat-value">${c.critical}</div><div class="stat-sub">Critical</div></div>
+      <div class="stat-card warning"><div class="stat-label">≤90 Days</div><div class="stat-value">${c.warning}</div><div class="stat-sub">Warning</div></div>`;
+  },
+
+  setType(t, btn) {
+    this.filterType=t;
+    if (btn) { btn.closest('.control-group').querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+    this.render();
+  },
+  setActiveFilter(v, btn) {
+    this.filterActive=v;
+    if (btn) { btn.closest('.control-group').querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+    this.render();
+  },
+
+  toggleSuspend(idx) {
+    this.drivers[idx].suspended = !this.drivers[idx].suspended;
+    this.render(); this.save();
+    showToast(this.drivers[idx].suspended?'Driver suspended':'Driver unsuspended');
+  },
+
+  deleteDriver(idx) {
+    if (!confirm(`Delete ${this.drivers[idx].name}?`)) return;
+    this.drivers.splice(idx,1); this.render(); this.save();
+    showToast('Driver deleted');
+  },
+
+  openModal(idx) {
+    this.editIdx = idx;
+    document.getElementById('airsideModalTitle').textContent = idx===null?'Add Airside Driver':'Edit Driver';
+    const d = idx!==null ? this.drivers[idx] : {};
+    document.getElementById('aName').value = d.name||'';
+    document.getElementById('aNric').value = d.nric||'';
+    document.getElementById('aPhone').value = d.phone||'';
+    document.getElementById('aType').value = d.type||'FT';
+    document.getElementById('aActive').value = d.active||'Active';
+    document.getElementById('aPermit').value = d.permit||'ADP';
+    document.getElementById('aExpiry').value = d.expiry||'';
+    document.getElementById('airsideModal').classList.add('show');
+  },
+
+  saveDriver() {
+    const name=document.getElementById('aName').value.trim();
+    const expiry=document.getElementById('aExpiry').value;
+    if (!name||!expiry) { showToast('Name and expiry date are required','red'); return; }
+    const entry = {
+      name, nric:document.getElementById('aNric').value.trim(),
+      phone:document.getElementById('aPhone').value.trim(),
+      type:document.getElementById('aType').value,
+      active:document.getElementById('aActive').value,
+      permit:document.getElementById('aPermit').value,
+      expiry, suspended: this.editIdx!==null ? this.drivers[this.editIdx].suspended : false
+    };
+    if (this.editIdx!==null) this.drivers[this.editIdx]=entry;
+    else { this.drivers.push(entry); this.drivers.sort((a,b)=>a.name.localeCompare(b.name)); }
+    document.getElementById('airsideModal').classList.remove('show');
+    this.render(); this.save();
+    showToast(this.editIdx!==null?'Driver updated':'Driver added','green');
+  },
+
+  save() { saveToSheets('airside', this.drivers); }
+};
+
+// ── NOTIFICATIONS ──────────────────────────────────────────────────
+function renderNotifications() {
+  const drivers = currentTab==='buggy' ? buggy.drivers : airside.drivers;
+  const all = drivers.map(d => {const days=daysLeft(d.expiry);return{...d,days,status:getStatus(days,d.suspended)};});
+  const counts = {
+    expired:all.filter(d=>d.status==='expired').length,
+    critical:all.filter(d=>d.status==='critical').length,
+    warning:all.filter(d=>d.status==='warning').length,
+    ok:all.filter(d=>d.status==='ok').length,
+    suspended:all.filter(d=>d.status==='suspended').length,
+  };
+  let html='';
+  if (counts.expired) html+=`<div class="notif-chip expired"><span class="dot"></span>${counts.expired} Expired – Action needed</div>`;
+  if (counts.critical) html+=`<div class="notif-chip critical"><span class="dot"></span>${counts.critical} Expiring within 30 days</div>`;
+  if (counts.warning) html+=`<div class="notif-chip warning"><span class="dot"></span>${counts.warning} Expiring within 90 days</div>`;
+  if (counts.ok) html+=`<div class="notif-chip ok"><span class="dot"></span>${counts.ok} Valid licenses</div>`;
+  if (counts.suspended) html+=`<div class="notif-chip suspended"><span class="dot"></span>${counts.suspended} Suspended</div>`;
+  document.getElementById('notifBar').innerHTML = html;
+}
+
+// ── MODAL CLOSE ON BACKDROP ────────────────────────────────────────
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target===el) el.classList.remove('show'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') document.querySelectorAll('.modal-overlay.show').forEach(el=>el.classList.remove('show'));
+});
+
+// Wire up lookup input properly
+document.getElementById('lookupInput').addEventListener('input', function() {
+  const clearBtn = document.getElementById('lookupClear');
+  if (clearBtn) clearBtn.style.display = this.value ? 'flex' : 'none';
+  runLookup(this.value);
+});
+
+// ── INIT DATA ──────────────────────────────────────────────────────
+const BUGGY_DATA = [
+  {"name":"Aaron Chua Song Ting","id":"JQ01089","type":"PT","issued":"2026-04-23","expiry":"2027-04-23","suspended":false},
+  {"name":"Aaronpal Singh Gill","id":"JQ01422","type":"PT","issued":"2026-04-10","expiry":"2027-04-10","suspended":false},
+  {"name":"Amatulsutha Muniandy","id":"JQ01173","type":"FT","issued":"2026-02-10","expiry":"2027-03-18","suspended":false},
+  {"name":"Baxter Oh Weijian","id":"JQ01215","type":"FT","issued":"2026-02-11","expiry":"2027-02-12","suspended":false},
+  {"name":"Debashene Suparamaniam","id":"JQ01201","type":"FT","issued":"2025-12-31","expiry":"2026-12-31","suspended":false},
+  {"name":"Dinesh Jeyapala","id":"JQ01379","type":"PT","issued":"2026-03-26","expiry":"2027-03-26","suspended":false},
+  {"name":"Elishah Yvonne Stanley","id":"JQ01344","type":"FT","issued":"2025-05-08","expiry":"2026-05-08","suspended":false},
+  {"name":"Endang Sri Harmiati","id":"JQ00770","type":"PT","issued":"2025-08-26","expiry":"2026-08-26","suspended":false},
+  {"name":"Gao Bo (Ted)","id":"JQ00909","type":"FT","issued":"2026-01-09","expiry":"2027-01-09","suspended":false},
+  {"name":"Hamri Bin Salim","id":"JQ01194","type":"FT","issued":"2025-11-06","expiry":"2026-11-06","suspended":false},
+  {"name":"Hirzi Harris","id":"JQ01334","type":"PT","issued":"2026-02-11","expiry":"2027-02-12","suspended":false},
+  {"name":"Iffa Nadia Binte Mohd Faudzi","id":"JQ00889","type":"FT","issued":"2026-03-05","expiry":"2027-03-06","suspended":false},
+  {"name":"Jasmine Chai Kian Ching","id":"JQ00985","type":"PT","issued":"2026-02-16","expiry":"2027-02-11","suspended":false},
+  {"name":"Jeyaseelan Sundram","id":"JQ00852","type":"FT","issued":"2026-02-16","expiry":"2027-03-05","suspended":false},
+  {"name":"Karen Tan Giak Leng","id":"JQ01316","type":"PT","issued":"2026-03-06","expiry":"2027-03-06","suspended":false},
+  {"name":"Khaw Seow San","id":"JQ00853","type":"PT","issued":"2025-07-10","expiry":"2026-11-24","suspended":false},
+  {"name":"Koh Boon Shen (Reuben)","id":"JQ01240","type":"FT","issued":"2026-03-26","expiry":"2027-03-26","suspended":false},
+  {"name":"Koh Geok Yen (Joanne)","id":"JQ01125","type":"PT","issued":"2026-02-10","expiry":"2027-03-06","suspended":false},
+  {"name":"Lai Mei Kuen (Shirley)","id":"JQ00830","type":"FT","issued":"2026-04-23","expiry":"2027-04-23","suspended":false},
+  {"name":"Low Jessie","id":"JQ00324","type":"PT","issued":"2025-04-23","expiry":"2027-06-03","suspended":false},
+  {"name":"Marcus Charles Kasmas","id":"JQ00491","type":"FT","issued":"2026-02-10","expiry":"2027-03-11","suspended":false},
+  {"name":"Mohamed Salih Mohamed Relvanullah","id":"JQ00304","type":"FT","issued":"2025-08-19","expiry":"2026-08-19","suspended":false},
+  {"name":"Mohammad Firdaus Bin Mohd Faudzi","id":"JQ01241","type":"FT","issued":"2026-01-18","expiry":"2027-01-18","suspended":false},
+  {"name":"Muhammad Azri","id":"JQ01407","type":"FT","issued":"2025-11-06","expiry":"2026-11-06","suspended":false},
+  {"name":"Ng Jin Heng Javier","id":"JQ01119","type":"PT","issued":"2025-02-16","expiry":"2027-02-16","suspended":false},
+  {"name":"Ng Kang Jian Jordan","id":"JQ01021","type":"PT","issued":"2026-02-16","expiry":"2027-02-16","suspended":false},
+  {"name":"Nur Hairiani Binte Kamsani","id":"JQ00371","type":"FT","issued":"2026-03-26","expiry":"2027-04-21","suspended":false},
+  {"name":"Nur Hazwani Binte Mohd Nasser","id":"JQ01270","type":"FT","issued":"2025-11-18","expiry":"2026-11-18","suspended":false},
+  {"name":"Park Soyun (Matilda)","id":"JQ01251","type":"FT","issued":"2026-02-16","expiry":"2027-03-25","suspended":false},
+  {"name":"Poh Yew Teck (AJ)","id":"JQ01319","type":"FT","issued":"2026-02-10","expiry":"2027-03-06","suspended":false},
+  {"name":"Sim Chee Kiat","id":"JQ01318","type":"FT","issued":"2025-08-19","expiry":"2026-07-22","suspended":false},
+  {"name":"Stanly Rafanan Chng","id":"JQ00892","type":"FT","issued":"2026-02-11","expiry":"2027-02-11","suspended":false},
+  {"name":"Tan Puay Kok (Jeffery Tan)","id":"JQ01071","type":"FT","issued":"2026-01-16","expiry":"2027-01-16","suspended":false},
+  {"name":"Tang Hsiao Huei (Jeslyn)","id":"JQ01116","type":"PT","issued":"2025-02-10","expiry":"2027-03-06","suspended":false},
+  {"name":"Tarakeshwar S/O Segaran","id":"JQ01424","type":"PT","issued":"2026-03-17","expiry":"2027-03-17","suspended":true},
+  {"name":"Thivyan Palanichamy","id":"JQ01367","type":"FT","issued":"2026-01-16","expiry":"2027-01-16","suspended":false},
+  {"name":"Wong Siew Wei Angelica","id":"JQ01149","type":"FT","issued":"2026-02-11","expiry":"2027-02-12","suspended":false},
+  {"name":"Yao Zifan (Jackson)","id":"JQ01425","type":"PT","issued":"2026-04-10","expiry":"2027-04-10","suspended":false},
+  {"name":"Yuwaida Binte Juri","id":"JQ00794","type":"PT","issued":"2026-02-11","expiry":"2027-02-11","suspended":false},
+  {"name":"Zohara Abu Bakar","id":"JQ01166","type":"PT","issued":"2025-12-23","expiry":"2026-12-23","suspended":false}
+];
+
+const AIRSIDE_DATA = [
+  {"name":"AARON CHUA SONG TING","nric":"154A","phone":"82851923","type":"PT","active":"Active","permit":"ADP","expiry":"2026-07-11","suspended":false},
+  {"name":"ABDUL RASID BIN AHMAD","nric":"774F","phone":"91689414","type":"FT","active":"Inactive","permit":"ADP","expiry":"2026-11-25","suspended":false},
+  {"name":"AHMAD SALEHIN BIN SALIM","nric":"428C","phone":"97623545","type":"PT","active":"Inactive","permit":"ADP","expiry":"2027-12-06","suspended":false},
+  {"name":"BAXTER OH WEIJIAN","nric":"991D","phone":"87177422","type":"FT","active":"Active","permit":"ADP","expiry":"2027-03-13","suspended":false},
+  {"name":"DONG MENG","nric":"018R","phone":"81735918","type":"FT","active":"Active","permit":"ADP","expiry":"2027-10-29","suspended":false},
+  {"name":"GAO BO","nric":"718X","phone":"80153468","type":"FT","active":"Active","permit":"ADP","expiry":"2026-11-23","suspended":false},
+  {"name":"HAMRI BIN SALIM","nric":"341G","phone":"88938487","type":"FT","active":"Active","permit":"ADP","expiry":"2026-12-09","suspended":false},
+  {"name":"HEMANTHA KUMAR DHUNDAIAH","nric":"404H","phone":"91810574","type":"PT","active":"Active","permit":"ADP","expiry":"2027-07-25","suspended":false},
+  {"name":"HO KELVIN","nric":"083Z","phone":"96759846","type":"PT","active":"Inactive","permit":"ADP","expiry":"2026-07-30","suspended":false},
+  {"name":"JI SHENGYU","nric":"533R","phone":"88968037","type":"FT","active":"Active","permit":"ADP","expiry":"2027-11-03","suspended":false},
+  {"name":"JOHNATHON LIM YONG JIE","nric":"107A","phone":"92707684","type":"FT","active":"Inactive","permit":"ADP","expiry":"2026-10-31","suspended":false},
+  {"name":"KHAW SEOW SAN","nric":"420Z","phone":"91148608","type":"PT","active":"Active","permit":"ADP","expiry":"2026-12-21","suspended":false},
+  {"name":"KOH BOON SHEN","nric":"123A","phone":"96366359","type":"FT","active":"Active","permit":"ADP","expiry":"2027-11-13","suspended":false}
+];
+
+// ── BOOT ───────────────────────────────────────────────────────────
+async function initApp() {
+  // Check if Google Script URL is set
+  if (GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE')) {
+    document.getElementById('setupNotice').classList.add('hidden');
+    document.getElementById('headerSub').textContent = 'Connected to Google Sheets';
+    // Try to load live data from Sheets
+    try {
+      const [bData, aData] = await Promise.all([loadFromSheets('buggy'), loadFromSheets('airside')]);
+      buggy.init(bData || BUGGY_DATA);
+      airside.init(aData || AIRSIDE_DATA);
+      return;
+    } catch { /* fall through to local */ }
+  } else {
+    document.getElementById('headerSub').textContent = 'Local mode – setup Google Sheets to sync';
+  }
+  buggy.init(BUGGY_DATA);
+  airside.init(AIRSIDE_DATA);
+}
+</script>
+</body>
+</html>
